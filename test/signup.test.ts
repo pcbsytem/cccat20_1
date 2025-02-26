@@ -1,154 +1,209 @@
-const request = require('supertest');
-const app = require('../src/signup');
-const { faker } = require('@faker-js/faker');
+import sinon from 'sinon';
+import { faker } from '@faker-js/faker';
+import Signup from '../src/signup';
+import GetAccount from '../src/getAccount';
+import { AccountDAODatabase, AccountDAOMemory } from '../src/data';
+import { get } from 'http';
 
-function generateCPF() {
-  const digits = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
-  const firstCheckDigit = calculateCheckDigit(digits, 10);
-  digits.push(firstCheckDigit);
-  const secondCheckDigit = calculateCheckDigit(digits, 11);
-  digits.push(secondCheckDigit);
-  return `${digits.slice(0, 3).join('')}.${digits.slice(3, 6).join('')}.${digits.slice(6, 9).join('')}-${digits.slice(9).join('')}`;
-}
+let signup: Signup
+let getAccount: GetAccount
 
-function calculateCheckDigit(digits: number[], weight: number) {
-  const sum = digits.reduce((acc, digit, index) => acc + digit * (weight - index), 0);
-  const remainder = sum % 11;
-  return remainder < 2 ? 0 : 11 - remainder;
-}
+beforeEach(() => {
+  const accountDAO = new AccountDAODatabase()
+  signup = new Signup(accountDAO)
+  getAccount = new GetAccount(accountDAO)
+})
 
-function generatePassword() {
-  let password;
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
-  do {
-    password = faker.internet.password({
-      length: 12,
-      memorable: false,
-      pattern: /[A-Za-z\d]/,
-    });
-  } while (!regex.test(password));
-
-  return password;
-}
-
-function calculateDigit(cpf: string, factor: number) {
-  let total = 0;
-  for (let i = 0; i < cpf.length; i++) {
-    total += parseInt(cpf[i]) * factor--;
+test('Deve fazer a criação da conta de um usuário do tipo passageiro', async () => {
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
   }
-  const remainder = total % 11;
-  return remainder < 2 ? 0 : 11 - remainder;
-}
-
-function generateCarPlate() {
-  const letters = faker.string.alpha({ length: 3, casing: 'upper' });
-  const numbers = faker.string.numeric({ length: 4 });
-  return `${letters}${numbers}`;
-}
-
-function generateName() {
-  const firstName = faker.person.firstName();
-  const lastName = faker.person.lastName();
-  return `${firstName} ${lastName}`;
-}
-
-describe('Signup API', () => {
-  test('Deve validar body com nome inválido', async () => {
-    const response = await request('http://localhost:3000')
-      .post('/signup')
-      .send({
-        name: '',
-        email: 'test@example.com',
-        password: 'password123',
-        cpf: '12345678900',
-        isDriver: false,
-        carPlate: 'ABC-1234'
-      });
-    expect(response.status).toBe(422);
-  });
-
-  test('Deve validar body com email inválido', async () => {
-    const response = await request('http://localhost:3000')
-      .post('/signup')
-      .send({
-        name: 'test',
-        email: 'test@example.com',
-        password: 'password123',
-        cpf: '12345678900',
-        isDriver: false,
-        carPlate: 'ABC-1234'
-      });
-    expect(response.status).toBe(422);
-  });
-
-  test('Deve validar body com password inválido', async () => {
-    const response = await request('http://localhost:3000')
-      .post('/signup')
-      .send({
-        name: 'John Doe',
-        email: 'test@example.com',
-        password: 'SecurePass1*',
-        cpf: '12345678900',
-        isDriver: false,
-        carPlate: 'ABC-1234'
-      });
-    expect(response.status).toBe(422);
-  });
-
-  test('Deve validar body com cpf inválido', async () => {
-    const response = await request('http://localhost:3000')
-      .post('/signup')
-      .send({
-        name: 'John Doe',
-        email: 'test@example.com',
-        password: 'SecurePass1',
-        cpf: '12345678900',
-        isDriver: false,
-        carPlate: 'ABC-1234'
-      });
-    expect(response.status).toBe(422);
-  });
-
-  test('Deve validar body com isDriver inválido', async () => {
-    const response = await request('http://localhost:3000')
-      .post('/signup')
-      .send({
-        name: 'John Doe',
-        email: 'test@example.com',
-        password: 'SecurePass1',
-        cpf: '39229903809',
-        isDriver: false,
-        carPlate: 'ABC-1234'
-      });
-    expect(response.status).toBe(422);
-  });
-
-  test('Deve validar body com carPlate inválido', async () => {
-    const response = await request('http://localhost:3000')
-      .post('/signup')
-      .send({
-        name: 'John Doe',
-        email: 'test@example.com',
-        password: 'SecurePass1',
-        cpf: '39229903809',
-        isDriver: true,
-        carPlate: 'ABC-123'
-      });
-    expect(response.status).toBe(422);
-  });
-
-  test('Deve fazer signup com sucesso', async () => {
-    const response = await request('http://localhost:3000')
-      .post('/signup')
-      .send({
-        name: generateName(),
-        email: faker.internet.email(),
-        password: generatePassword(),
-        cpf: generateCPF(),
-        isDriver: true,
-        carPlate: generateCarPlate()
-      });
-    expect(response.status).toBe(200);
-  });
+  const outputSignup = await signup.execute(input)
+  expect(outputSignup.accountId).toBeDefined()
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
+  expect(outputGetAccount.name).toBe(input.name)
+  expect(outputGetAccount.email).toBe(input.email)
+  expect(outputGetAccount.cpf).toBe(input.cpf)
+  expect(outputGetAccount.password).toBe(input.password)
 });
+
+test('Deve fazer a criação da conta de um usuário do tipo motorista', async () => {
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    carPlate: 'AAA9999',
+    isDriver: true,
+  }
+  const outputSignup = await signup.execute(input)
+  expect(outputSignup.accountId).toBeDefined()
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
+  expect(outputGetAccount.name).toBe(input.name)
+  expect(outputGetAccount.email).toBe(input.email)
+  expect(outputGetAccount.cpf).toBe(input.cpf)
+  expect(outputGetAccount.password).toBe(input.password)
+});
+
+test('Não deve fazer a criação da conta de uma usuário se o nome for inválido', async () => {
+  const input = {
+    name: 'John',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid name"));
+});
+
+test('Não deve fazer a criação da conta de uma usuário se o email for inválido', async () => {
+  const input = {
+    name: 'John Doe',
+    email: `john.doe${Math.random()}`,
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid email"))
+});
+
+test('Não deve fazer a criação da conta de uma usuário se o cpf for inválido', async () => {
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '9745632155',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid cpf"))
+});
+
+test('Não deve fazer a criação da conta de uma usuário se o password for inválido', async () => {
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE',
+    isPassenger: true,
+  }
+  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid password"))
+});
+
+test('Não deve fazer a criação da conta de uma usuário se a conta estiver duplicada', async () => {
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  await signup.execute(input)
+  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Account already exists"))
+});
+
+test('Não deve fazer a criação da conta de uma usuário se a placa for inválida', async () => {
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    carPlate: 'AAA999',
+    isDriver: true,
+  }
+  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid car plate"))
+});
+
+// Test Patterns
+
+test('Deve fazer a criação da conta de um usuário do tipo passageiro com stub', async () => {
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  const saveAccountStub = sinon.stub(AccountDAODatabase.prototype, 'saveAccount').resolves();
+  const getAccountByEmailStub = sinon.stub(AccountDAODatabase.prototype, 'getAccountByEmail').resolves();
+  const getAccountByIdStub = sinon.stub(AccountDAODatabase.prototype, 'getAccountById').resolves(input);
+  const outputSignup = await signup.execute(input)
+  expect(outputSignup.accountId).toBeDefined()
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
+  expect(outputGetAccount.name).toBe(input.name)
+  expect(outputGetAccount.email).toBe(input.email)
+  expect(outputGetAccount.cpf).toBe(input.cpf)
+  expect(outputGetAccount.password).toBe(input.password)
+  saveAccountStub.restore()
+  getAccountByEmailStub.restore()
+  getAccountByIdStub.restore()
+});
+
+test('Deve fazer a criação da conta de um usuário do tipo passageiro com spy', async () => {
+  const saveAccountSpy = sinon.spy(AccountDAODatabase.prototype, 'saveAccount');
+  const getAccountByIdSpy = sinon.spy(AccountDAODatabase.prototype, 'getAccountById');
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  const outputSignup = await signup.execute(input)
+  expect(outputSignup.accountId).toBeDefined()
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
+  expect(outputGetAccount.name).toBe(input.name)
+  expect(outputGetAccount.email).toBe(input.email)
+  expect(outputGetAccount.cpf).toBe(input.cpf)
+  expect(outputGetAccount.password).toBe(input.password)
+  expect(saveAccountSpy.calledOnce).toBe(true)
+  expect(getAccountByIdSpy.calledWith(outputSignup.accountId)).toBe(true)
+  saveAccountSpy.restore()
+  getAccountByIdSpy.restore()
+});
+
+test('Deve fazer a criação da conta de um usuário do tipo passageiro com mock', async () => {
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  const accountDAOMock = sinon.mock(AccountDAODatabase.prototype)
+  accountDAOMock.expects('saveAccount').once().resolves()
+  const outputSignup = await signup.execute(input)
+  expect(outputSignup.accountId).toBeDefined()
+  accountDAOMock.expects('getAccountById').once().withArgs(outputSignup.accountId).resolves(input)
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
+  expect(outputGetAccount.name).toBe(input.name)
+  expect(outputGetAccount.email).toBe(input.email)
+  expect(outputGetAccount.cpf).toBe(input.cpf)
+  expect(outputGetAccount.password).toBe(input.password)
+  accountDAOMock.verify()
+  accountDAOMock.restore()
+});
+
+test('Deve fazer a criação da conta de um usuário do tipo passageiro com fake', async () => {
+  const accountDAO = new AccountDAOMemory()
+  const signup = new Signup(accountDAO)
+  const getAccount = new GetAccount(accountDAO)
+  const input = {
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  const outputSignup = await signup.execute(input)
+  expect(outputSignup.accountId).toBeDefined()
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
+  expect(outputGetAccount.name).toBe(input.name)
+  expect(outputGetAccount.email).toBe(input.email)
+  expect(outputGetAccount.cpf).toBe(input.cpf)
+  expect(outputGetAccount.password).toBe(input.password)
+});
+
