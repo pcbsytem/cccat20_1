@@ -30,7 +30,6 @@ export class AccountDAODatabase implements AccountDAO {
     await connection.$pool.end();
   }
 }
-
 export class AccountDAOMemory implements AccountDAO {
   private accounts: any[] = [];
 
@@ -46,3 +45,4 @@ export class AccountDAOMemory implements AccountDAO {
     this.accounts.push(account);
   }
 }
+
