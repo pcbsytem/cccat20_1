@@ -3,14 +3,15 @@ import { faker } from '@faker-js/faker';
 import Signup from '../src/signup';
 import GetAccount from '../src/getAccount';
 import { AccountDAODatabase, AccountDAOMemory } from '../src/data';
-import { get } from 'http';
+import Registry from '../src/Registry';
 
 let signup: Signup
 let getAccount: GetAccount
 
 beforeEach(() => {
   const accountDAO = new AccountDAODatabase()
-  signup = new Signup(accountDAO)
+  Registry.getInstance().provide("accountDAO", accountDAO);
+  signup = new Signup()
   getAccount = new GetAccount(accountDAO)
 })
 
@@ -189,7 +190,8 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com mock
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro com fake', async () => {
   const accountDAO = new AccountDAOMemory()
-  const signup = new Signup(accountDAO)
+  Registry.getInstance().provide("accountDAO", accountDAO);
+  const signup = new Signup()
   const getAccount = new GetAccount(accountDAO)
   const input = {
     name: 'John Doe',
