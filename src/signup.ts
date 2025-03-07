@@ -2,11 +2,11 @@ import crypto from "crypto";
 import { validateCpf } from "./validateCpf";
 import { validatePassword } from "./validatePassword";
 import AccountDAO from "./data";
+import Registry, { inject } from './Registry';
 
 export default class Signup {
-	constructor(readonly accountDAO: AccountDAO) {
-
-	}
+	@inject("accountDAO")
+	accountDAO!: AccountDAO
 
 	async execute(input: any) {
 		const account = {

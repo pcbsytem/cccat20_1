@@ -5,13 +5,15 @@ import { AccountDAODatabase } from './data';
 import { RideDAODatabase } from "./rideDAO";
 import RequestRide from "./requestRide";
 import GetRide from "./getRide";
+import Registry from './Registry';
 
 const app = express();
 app.use(express.json());
 
-const accountDAO = new AccountDAODatabase()
-const signup = new Signup(accountDAO)
-const getAccount = new GetAccount(accountDAO)
+const accountDAO = new AccountDAODatabase();
+Registry.getInstance().provide("accountDAO", accountDAO);
+const signup = new Signup();
+const getAccount = new GetAccount(accountDAO);
 
 app.post("/signup", async function (req, res) {
   const input = req.body;
