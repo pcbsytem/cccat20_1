@@ -2,9 +2,9 @@ import express from "express";
 import Signup from "./signup";
 import GetAccount from "./getAccount";
 import { AccountDAODatabase } from './data';
-import { RideDAODatabase } from "./rideDAO";
-import RequestRide from "./requestRide";
-import GetRide from "./getRide";
+import { RideDAODatabase } from "./RideDAO";
+import RequestRide from "./RequestRide";
+import GetRide from "./GetRide";
 import Registry from './Registry';
 
 const app = express();
@@ -33,8 +33,10 @@ app.get("/accounts/:accountId", async function (req, res) {
 });
 
 const rideDAO = new RideDAODatabase()
-const requestRide = new RequestRide(rideDAO, accountDAO)
-const getRide = new GetRide(rideDAO)
+Registry.getInstance().provide("accountDAO", accountDAO);
+Registry.getInstance().provide("rideDAO", rideDAO);
+const requestRide = new RequestRide()
+const getRide = new GetRide()
 
 app.post("/requestRide", async function (req, res) {
   const input = req.body;
