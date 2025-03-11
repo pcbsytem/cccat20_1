@@ -1,18 +1,18 @@
 import sinon from 'sinon';
 import { faker } from '@faker-js/faker';
-import Signup from '../src/Signup';
-import GetAccount from '../src/GetAccount';
-import { AccountRepositoryDatabase, AccountRepositoryMemory } from '../src/AccountRepository';
+import Signup from '../src/signup';
+import GetAccount from '../src/getAccount';
+import { AccountDAODatabase, AccountDAOMemory } from '../src/data';
 import Registry from '../src/Registry';
 
 let signup: Signup
 let getAccount: GetAccount
 
 beforeEach(() => {
-  const accountRepository = new AccountRepositoryDatabase()
-  Registry.getInstance().provide("accountRepository", accountRepository);
+  const accountDAO = new AccountDAODatabase()
+  Registry.getInstance().provide("accountDAO", accountDAO);
   signup = new Signup()
-  getAccount = new GetAccount(accountRepository)
+  getAccount = new GetAccount(accountDAO)
 })
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro', async () => {
@@ -121,16 +121,16 @@ test('Não deve fazer a criação da conta de uma usuário se a placa for invál
 // Test Patterns
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro com stub', async () => {
-  const input: any = {
+  const input = {
     name: 'John Doe',
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
     isPassenger: true,
   }
-  const saveAccountStub = sinon.stub(AccountRepositoryDatabase.prototype, 'saveAccount').resolves();
-  const getAccountByEmailStub = sinon.stub(AccountRepositoryDatabase.prototype, 'getAccountByEmail').resolves();
-  const getAccountByIdStub = sinon.stub(AccountRepositoryDatabase.prototype, 'getAccountById').resolves(input);
+  const saveAccountStub = sinon.stub(AccountDAODatabase.prototype, 'saveAccount').resolves();
+  const getAccountByEmailStub = sinon.stub(AccountDAODatabase.prototype, 'getAccountByEmail').resolves();
+  const getAccountByIdStub = sinon.stub(AccountDAODatabase.prototype, 'getAccountById').resolves(input);
   const outputSignup = await signup.execute(input)
   expect(outputSignup.accountId).toBeDefined()
   const outputGetAccount = await getAccount.execute(outputSignup.accountId)
@@ -144,8 +144,8 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com stub
 });
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro com spy', async () => {
-  const saveAccountSpy = sinon.spy(AccountRepositoryDatabase.prototype, 'saveAccount');
-  const getAccountByIdSpy = sinon.spy(AccountRepositoryDatabase.prototype, 'getAccountById');
+  const saveAccountSpy = sinon.spy(AccountDAODatabase.prototype, 'saveAccount');
+  const getAccountByIdSpy = sinon.spy(AccountDAODatabase.prototype, 'getAccountById');
   const input = {
     name: 'John Doe',
     email: faker.internet.email(),
@@ -174,25 +174,25 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com mock
     password: 'asdQWE123',
     isPassenger: true,
   }
-  const accountRepositoryMock = sinon.mock(AccountRepositoryDatabase.prototype)
-  accountRepositoryMock.expects('saveAccount').once().resolves()
+  const accountDAOMock = sinon.mock(AccountDAODatabase.prototype)
+  accountDAOMock.expects('saveAccount').once().resolves()
   const outputSignup = await signup.execute(input)
   expect(outputSignup.accountId).toBeDefined()
-  accountRepositoryMock.expects('getAccountById').once().withArgs(outputSignup.accountId).resolves(input)
+  accountDAOMock.expects('getAccountById').once().withArgs(outputSignup.accountId).resolves(input)
   const outputGetAccount = await getAccount.execute(outputSignup.accountId)
   expect(outputGetAccount.name).toBe(input.name)
   expect(outputGetAccount.email).toBe(input.email)
   expect(outputGetAccount.cpf).toBe(input.cpf)
   expect(outputGetAccount.password).toBe(input.password)
-  accountRepositoryMock.verify()
-  accountRepositoryMock.restore()
+  accountDAOMock.verify()
+  accountDAOMock.restore()
 });
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro com fake', async () => {
-  const accountRepository = new AccountRepositoryMemory()
-  Registry.getInstance().provide("accountRepository", accountRepository);
+  const accountDAO = new AccountDAOMemory()
+  Registry.getInstance().provide("accountDAO", accountDAO);
   const signup = new Signup()
-  const getAccount = new GetAccount(accountRepository)
+  const getAccount = new GetAccount(accountDAO)
   const input = {
     name: 'John Doe',
     email: faker.internet.email(),

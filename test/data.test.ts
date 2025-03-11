@@ -1,18 +1,24 @@
 import crypto from "crypto";
-import { faker } from "@faker-js/faker";
-import { AccountRepositoryDatabase } from "../src/AccountRepository";
-import { Account } from "../src/Account";
+import { faker } from '@faker-js/faker';
+import { AccountDAODatabase } from "../src/data";
 
 test("Deve salvar uma account", async () => {
-  const accountRepository = new AccountRepositoryDatabase();
-  const account = Account.create("John Doe", faker.internet.email(), "97456321558", "asdQWE123", "", true, false);
-  await accountRepository.saveAccount(account);
-  const accountByEmail = await accountRepository.getAccountByEmail(account.email);
-  expect(accountByEmail!.name).toBe(account.name);
-  expect(accountByEmail!.email).toBe(account.email);
-  expect(accountByEmail!.cpf).toBe(account.cpf);
-  expect(accountByEmail!.password).toBe(account.password);
-  const accountById = await accountRepository.getAccountById(account.accountId);
+  const accountDAO = new AccountDAODatabase();
+  const account = {
+    accountId: crypto.randomUUID(),
+    name: 'John Doe',
+    email: faker.internet.email(),
+    cpf: '97456321558',
+    password: 'asdQWE123',
+    isPassenger: true,
+  }
+  await accountDAO.saveAccount(account);
+  const accountByEmail = await accountDAO.getAccountByEmail(account.email);
+  expect(accountByEmail.name).toBe(account.name);
+  expect(accountByEmail.email).toBe(account.email);
+  expect(accountByEmail.cpf).toBe(account.cpf);
+  expect(accountByEmail.password).toBe(account.password);
+  const accountById = await accountDAO.getAccountById(account.accountId);
   expect(accountById.name).toBe(account.name);
   expect(accountById.email).toBe(account.email);
   expect(accountById.cpf).toBe(account.cpf);

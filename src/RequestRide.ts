@@ -1,28 +1,32 @@
 import crypto from "crypto";
-import RideRepository from "./RideRepository";
-import AccountRepository from "./AccountRepository";
+import RideDAO from "./RideDAO";
+import AccountDAO from "./data";
 import { inject } from './Registry';
-import Ride from './Ride';
 
 export default class RequestRide {
-  @inject("accountRepository")
-  accountRepository!: AccountRepository;
-  @inject("rideRepository")
-  rideRepository!: RideRepository;
+  @inject("accountDAO")
+  accountDAO!: AccountDAO;
+  @inject("rideDAO")
+  rideDAO!: RideDAO;
 
   async execute(input: Input): Promise<Output> {
-    const account = await this.accountRepository.getAccountById(input.passengerId);
-    if (!account || !account.isPassenger) throw new Error("The request must be a passenger");
-    const hasActiveRide = await this.rideRepository.hasActiveRideByPassengerId(input.passengerId);
+    const account = await this.accountDAO.getAccountById(input.passengerId);
+    if (!account || !account.is_passenger) throw new Error("The request must be a passenger");
+    const hasActiveRide = await this.rideDAO.hasActiveRideByPassengerId(input.passengerId);
     if (hasActiveRide) throw new Error("The request already have an active ride");
-    const ride = Ride.create(
-      input.passengerId,
-      input.fromLat,
-      input.fromLong,
-      input.toLat,
-      input.toLong
-    );
-    await this.rideRepository.saveRide(ride);
+    if (input.fromLat < -90 || input.fromLat > 90) throw new Error("The latitude is invalid");
+    if (input.toLat < -90 || input.toLat > 90) throw new Error("The latitude is invalid");
+    if (input.fromLong < -180 || input.fromLong > 180) throw new Error("The longitude is invalid");
+    if (input.toLong < -180 || input.toLong > 180) throw new Error("The longitude is invalid");
+    const ride = {
+      rideId: crypto.randomUUID(),
+      ...input,
+      fare: 0,
+      distance: 0,
+      status: "requested",
+      date: new Date()
+    }
+    await this.rideDAO.saveRide(ride);
     return {
       rideId: ride.rideId
     }

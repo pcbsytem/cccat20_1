@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker/.';
 import RequestRide from '../src/RequestRide'
-import { AccountRepositoryDatabase } from '../src/AccountRepository';
+import { AccountDAODatabase } from '../src/data';
 import Registry from '../src/Registry';
-import Signup from '../src/Signup';
-import { RideRepositoryDatabase } from '../src/RideRepository';
+import Signup from '../src/signup';
+import { RideDAODatabase } from '../src/RideDAO';
 import GetRide from '../src/GetRide';
 
 let signup: Signup;
@@ -11,10 +11,10 @@ let requestRide: RequestRide;
 let getRide: GetRide;
 
 beforeEach(() => {
-  const accountRepository = new AccountRepositoryDatabase();
-  const rideRepository = new RideRepositoryDatabase();
-  Registry.getInstance().provide("accountRepository", accountRepository);
-  Registry.getInstance().provide("rideRepository", rideRepository);
+  const accountDAO = new AccountDAODatabase();
+  const rideDAO = new RideDAODatabase();
+  Registry.getInstance().provide("accountDAO", accountDAO);
+  Registry.getInstance().provide("rideDAO", rideDAO);
   signup = new Signup();
   requestRide = new RequestRide();
   getRide = new GetRide();
