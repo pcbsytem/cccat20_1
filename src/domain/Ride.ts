@@ -1,4 +1,6 @@
 import crypto from "crypto";
+
+// Entity
 export default class Ride {
   constructor(
     readonly rideId: string,

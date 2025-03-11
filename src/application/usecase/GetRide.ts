@@ -1,7 +1,7 @@
-import { inject } from './Registry';
-import RideRepository from './RideRepository';
+import { inject } from '../../infra/di/Registry';
+import RideRepository from '../../infra/repository/RideRepository';
 
-
+// Use Case
 export default class GetRide {
   @inject("rideRepository")  
   rideRepository!: RideRepository;

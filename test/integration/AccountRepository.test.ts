@@ -1,9 +1,12 @@
-import crypto from "crypto";
 import { faker } from "@faker-js/faker";
-import { AccountRepositoryDatabase } from "../src/AccountRepository";
-import { Account } from "../src/Account";
+import { AccountRepositoryDatabase } from "../../src/infra/repository/AccountRepository";
+import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
+import { Account } from "../../src/domain/Account";
+import Registry from '../../src/infra/di/Registry';
 
 test("Deve salvar uma account", async () => {
+  const databaseConnection = new PgPromiseAdapter();
+  Registry.getInstance().provide("databaseConnection", databaseConnection);
   const accountRepository = new AccountRepositoryDatabase();
   const account = Account.create("John Doe", faker.internet.email(), "97456321558", "asdQWE123", "", true, false);
   await accountRepository.saveAccount(account);
@@ -17,4 +20,5 @@ test("Deve salvar uma account", async () => {
   expect(accountById.email).toBe(account.email);
   expect(accountById.cpf).toBe(account.cpf);
   expect(accountById.password).toBe(account.password);
+  await databaseConnection.close()
 })

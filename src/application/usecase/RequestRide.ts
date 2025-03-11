@@ -1,8 +1,9 @@
-import RideRepository from "./RideRepository";
-import AccountRepository from "./AccountRepository";
-import { inject } from './Registry';
-import Ride from './Ride';
+import RideRepository from "../../infra/repository/RideRepository";
+import AccountRepository from "../../infra/repository/AccountRepository";
+import { inject } from '../../infra/di/Registry';
+import Ride from '../../domain/Ride';
 
+// Use Case
 export default class RequestRide {
   @inject("accountRepository")
   accountRepository!: AccountRepository;

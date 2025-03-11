@@ -1,14 +1,18 @@
 import sinon from 'sinon';
 import { faker } from '@faker-js/faker';
-import Signup from '../src/Signup';
-import GetAccount from '../src/GetAccount';
-import { AccountRepositoryDatabase, AccountRepositoryMemory } from '../src/AccountRepository';
-import Registry from '../src/Registry';
+import { AccountRepositoryDatabase, AccountRepositoryMemory } from '../../src/infra/repository/AccountRepository';
+import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
+import GetAccount from '../../src/application/usecase/GetAccount';
+import Registry from '../../src/infra/di/Registry';
+import Signup from '../../src/application/usecase/Signup';
 
 let signup: Signup
 let getAccount: GetAccount
+let databaseConnection: PgPromiseAdapter
 
 beforeEach(() => {
+  databaseConnection = new PgPromiseAdapter();
+  Registry.getInstance().provide("databaseConnection", databaseConnection);
   const accountRepository = new AccountRepositoryDatabase()
   Registry.getInstance().provide("accountRepository", accountRepository);
   signup = new Signup()
@@ -207,5 +211,9 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com fake
   expect(outputGetAccount.email).toBe(input.email)
   expect(outputGetAccount.cpf).toBe(input.cpf)
   expect(outputGetAccount.password).toBe(input.password)
+});
+
+afterEach(async () => {
+  await databaseConnection.close()
 });
 

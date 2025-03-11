@@ -1,16 +1,20 @@
 import { faker } from '@faker-js/faker/.';
-import RequestRide from '../src/RequestRide'
-import { AccountRepositoryDatabase } from '../src/AccountRepository';
-import Registry from '../src/Registry';
-import Signup from '../src/Signup';
-import { RideRepositoryDatabase } from '../src/RideRepository';
-import GetRide from '../src/GetRide';
+import RequestRide from '../../src/application/usecase/RequestRide'
+import { AccountRepositoryDatabase } from '../../src/infra/repository/AccountRepository';
+import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
+import { RideRepositoryDatabase } from '../../src/infra/repository/RideRepository';
+import Registry from '../../src/infra/di/Registry';
+import Signup from '../../src/application/usecase/Signup';
+import GetRide from '../../src/application/usecase/GetRide';
 
 let signup: Signup;
 let requestRide: RequestRide;
 let getRide: GetRide;
+let databaseConnection: PgPromiseAdapter
 
 beforeEach(() => {
+  databaseConnection = new PgPromiseAdapter();
+  Registry.getInstance().provide("databaseConnection", databaseConnection);
   const accountRepository = new AccountRepositoryDatabase();
   const rideRepository = new RideRepositoryDatabase();
   Registry.getInstance().provide("accountRepository", accountRepository);
@@ -107,3 +111,7 @@ test("Não deve solicitar uma corrida se latitude ou longitude estiverem inváli
   }
   await expect(() => requestRide.execute(inputRequestRide)).rejects.toThrow(new Error("The latitude is invalid"));
 })
+
+afterEach(async () => {
+  await databaseConnection.close()
+});
