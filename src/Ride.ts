@@ -1,3 +1,4 @@
+import crypto from "crypto";
 export default class Ride {
   constructor(
     readonly rideId: string,
