@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon --exec ts-node src/api.ts",
+    "start": "nodemon --exec ts-node src/main.ts",
     "test": "npx jest --runInBand --watchAll --passWithNoTests",
     "test:file": "npx jest --runInBand ",
     "docker:start": "docker compose up -d",
