@@ -1,5 +1,4 @@
-import pgp from "pg-promise";
-import Ride from '../../domain/Ride';
+import Ride from '../../application/domain/Ride';
 import { inject } from '../di/Registry';
 import DatabaseConnection from '../database/DatabaseConnection';
 

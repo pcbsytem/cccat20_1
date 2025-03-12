@@ -1,4 +1,4 @@
-import Ride from '../../src/domain/Ride';
+import Ride from '../../src/application/domain/Ride';
 
 test("Deve testar a ride", () => {
   const fromLat = -27.584905257808835;

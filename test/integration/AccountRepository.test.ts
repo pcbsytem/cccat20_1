@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { AccountRepositoryDatabase } from "../../src/infra/repository/AccountRepository";
 import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
-import { Account } from "../../src/domain/Account";
+import { Account } from "../../src/application/domain/Account";
 import Registry from '../../src/infra/di/Registry';
 
 test("Deve salvar uma account", async () => {
