@@ -26,7 +26,7 @@ export default class Ride {
     fromLat: number,
     fromLong: number,
     toLat: number,
-    toLong: number,
+    toLong: number
   ) {
     const rideId = crypto.randomUUID();
     const status = "requested";
@@ -37,6 +37,34 @@ export default class Ride {
       rideId, 
       passengerId,
       null,
+      fromLat, 
+      fromLong, 
+      toLat, 
+      toLong, 
+      fare, 
+      distance, 
+      status, 
+      date
+    );
+  }
+
+  static update (
+    rideId: string,
+    passengerId: string,
+    driverId: string,
+    fromLat: number,
+    fromLong: number,
+    toLat: number,
+    toLong: number,
+    fare: number,
+    distance: number,
+    date: Date
+  ) {
+    const status = "accepted";
+    return new Ride(
+      rideId, 
+      passengerId,
+      driverId,
       fromLat, 
       fromLong, 
       toLat, 
