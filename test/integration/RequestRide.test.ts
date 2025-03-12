@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker/.';
 import RequestRide from '../../src/application/usecase/RequestRide'
+import Signup from '../../src/application/usecase/Signup';
+import GetRide from '../../src/application/usecase/GetRide';
 import { AccountRepositoryDatabase } from '../../src/infra/repository/AccountRepository';
 import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
 import { RideRepositoryDatabase } from '../../src/infra/repository/RideRepository';
 import Registry from '../../src/infra/di/Registry';
-import Signup from '../../src/application/usecase/Signup';
-import GetRide from '../../src/application/usecase/GetRide';
 
 let signup: Signup;
 let requestRide: RequestRide;
@@ -22,7 +22,7 @@ beforeEach(() => {
   signup = new Signup();
   requestRide = new RequestRide();
   getRide = new GetRide();
-})
+});
 
 test("Deve solicitar uma corrida", async () => {  
   const inputSignup = {
@@ -51,7 +51,7 @@ test("Deve solicitar uma corrida", async () => {
   expect(outputGetRide.fare).toBe(21);
   expect(outputGetRide.distance).toBe(10);
   expect(outputGetRide.status).toBe("requested");
-})
+});
 
 test("Não deve solicitar uma corrida se não for um passageiro", async () => {
   const inputSignup = {
@@ -71,7 +71,7 @@ test("Não deve solicitar uma corrida se não for um passageiro", async () => {
     toLong: -48.522234807851476,
   }
   await expect(() => requestRide.execute(inputRequestRide)).rejects.toThrow(new Error("The request must be a passenger"));
-})
+});
 
 test("Não deve solicitar uma corrida se o passageiro já tiver uma corrida em andamento", async () => {
   const inputSignup = {
@@ -91,7 +91,7 @@ test("Não deve solicitar uma corrida se o passageiro já tiver uma corrida em a
   }
   await requestRide.execute(inputRequestRide);
   await expect(() => requestRide.execute(inputRequestRide)).rejects.toThrow(new Error("The request already have an active ride"));
-})
+});
 
 test("Não deve solicitar uma corrida se latitude ou longitude estiverem inválidas", async () => {
   const inputSignup = {
@@ -110,7 +110,7 @@ test("Não deve solicitar uma corrida se latitude ou longitude estiverem inváli
     toLong: -48.522234807851476,
   }
   await expect(() => requestRide.execute(inputRequestRide)).rejects.toThrow(new Error("The latitude is invalid"));
-})
+});
 
 afterEach(async () => {
   await databaseConnection.close()
