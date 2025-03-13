@@ -7,7 +7,7 @@ export default class StartRide {
   @inject("rideRepository")
   rideRepository!: RideRepository;
 
-  async execute(input: any): Promise<any> {
+  async execute(input: Input): Promise<Output> {
     const hasInProgressRide = await this.rideRepository.hasInProgressRideByDriverId(input.driverId);
     if (hasInProgressRide) throw new Error("The request already have an active ride");
     const outputRide = await this.rideRepository.getRideById(input.rideId);
@@ -30,4 +30,13 @@ export default class StartRide {
       rideId: input.rideId
     }
   }
+}
+
+type Input = {
+  rideId: string,
+  driverId: string
+}
+
+type Output = {
+  rideId: string
 }

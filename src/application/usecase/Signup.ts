@@ -6,7 +6,7 @@ export default class Signup {
 	@inject("accountRepository")
 	accountRepository!: AccountRepository
 
-	async execute(input: any) {
+	async execute(input: any): Promise<Output> {
 		const account = Account.create(
 			input.name, 
 			input.email, 
@@ -23,4 +23,8 @@ export default class Signup {
 			accountId: account.accountId
 		}
 	}
+}
+
+type Output = {
+  accountId: string
 }

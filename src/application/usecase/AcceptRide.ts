@@ -9,7 +9,7 @@ export default class AcceptRide {
   @inject("rideRepository")
   rideRepository!: RideRepository;
 
-  async execute(input: any): Promise<any> {
+  async execute(input: Input): Promise<Output> {
     const account = await this.accountRepository.getAccountById(input.driverId);
     if (!account || !account.isDriver) throw new Error("The request must be a driver");
     const hasActiveRide = await this.rideRepository.hasActiveRideByDriverId(input.driverId);
@@ -34,4 +34,13 @@ export default class AcceptRide {
       rideId: input.rideId
     }
   }
-} 
+}
+
+type Input = {
+  rideId: string,
+  driverId: string
+}
+
+type Output = {
+  rideId: string
+}
