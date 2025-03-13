@@ -7,6 +7,7 @@ export default interface RideRepository {
   saveRide(ride: Ride): Promise<void>;
   updateRide(ride: Ride): Promise<void>;
   getRideById(rideId: string): Promise<Ride>;
+  hasActiveRideByRideId(rideId: string): Promise<boolean>;
   hasActiveRideByPassengerId(passengerId: string): Promise<boolean>;
   hasActiveRideByDriverId(driverId: string): Promise<boolean>;
   hasInProgressRideByDriverId(driverId: string): Promise<boolean>;
@@ -46,6 +47,11 @@ export class RideRepositoryDatabase implements RideRepository {
       data.date
     );
   }
+
+  async hasActiveRideByRideId(rideId: string): Promise<boolean> {
+    const [data] = await this.connection.query("select 1 from ccca.ride where ride_id = $1 and status in ('requested', 'accepted')", [rideId]);
+    return !!data;
+  }  
 
   async hasActiveRideByPassengerId(passengerId: string): Promise<boolean> {
     const [data] = await this.connection.query("select 1 from ccca.ride where passenger_id = $1 and status in ('requested', 'accepted', 'in_progress')", [passengerId]);
