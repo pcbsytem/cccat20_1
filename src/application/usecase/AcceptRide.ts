@@ -15,6 +15,7 @@ export default class AcceptRide {
     const hasActiveRide = await this.rideRepository.hasActiveRideByDriverId(input.driverId);
     if (hasActiveRide) throw new Error("The request already have an active ride");
     const outputRide = await this.rideRepository.getRideById(input.rideId);
+    const status = "accepted";
     const ride = Ride.update(
       input.rideId,
       outputRide.passengerId,
@@ -25,6 +26,7 @@ export default class AcceptRide {
       outputRide.toLong,
       outputRide.fare,
       outputRide.distance,
+      status,
       outputRide.date
     );
     await this.rideRepository.updateRide(ride);
