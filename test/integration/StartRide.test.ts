@@ -64,7 +64,7 @@ test("Deve iniciar uma corrida", async () => {
   expect(outputRequestRide.rideId).toBe(outputStartRide.rideId);
 });
 
-test("Não deve iniciar uma corrida se não for um motorista", async () => {
+test("Não deve iniciar uma corrida se o motorista já tiver uma corrida em andamento", async () => {
   const inputPassenger = {
     name: 'John Doe',
     email: faker.internet.email(),
