@@ -58,9 +58,9 @@ export default class Ride {
     toLong: number,
     fare: number,
     distance: number,
+    status: string,
     date: Date
-  ) {
-    const status = "accepted";
+  ) {    
     return new Ride(
       rideId, 
       passengerId,

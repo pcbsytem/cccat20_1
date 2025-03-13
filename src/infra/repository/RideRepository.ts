@@ -9,6 +9,7 @@ export default interface RideRepository {
   getRideById(rideId: string): Promise<Ride>;
   hasActiveRideByPassengerId(passengerId: string): Promise<boolean>;
   hasActiveRideByDriverId(driverId: string): Promise<boolean>;
+  hasInProgressRideByDriverId(driverId: string): Promise<boolean>;
 }
 
 export class RideRepositoryDatabase implements RideRepository {
@@ -53,6 +54,11 @@ export class RideRepositoryDatabase implements RideRepository {
 
   async hasActiveRideByDriverId(driverId: string): Promise<boolean> {
     const [data] = await this.connection.query("select 1 from ccca.ride where driver_id = $1 and status in ('accepted', 'in_progress')", [driverId]);
+    return !!data;
+  }
+
+  async hasInProgressRideByDriverId(driverId: string): Promise<boolean> {
+    const [data] = await this.connection.query("select 1 from ccca.ride where driver_id = $1 and status in ('in_progress')", [driverId]);
     return !!data;
   }  
 }
