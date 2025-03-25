@@ -10,7 +10,7 @@ import Signup from './application/usecase/Signup';
 const databaseConnection = new PgPromiseAdapter();
 const accountRepository = new AccountRepositoryDatabase();
 const signup = new Signup();
-const getAccount = new GetAccount(accountRepository);
+const getAccount = new GetAccount();
 const httpServer = new ExpressAdapter();
 // const httpServer = new HapiAdapter();
 Registry.getInstance().provide("databaseConnection", databaseConnection);

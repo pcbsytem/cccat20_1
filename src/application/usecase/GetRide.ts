@@ -8,12 +8,12 @@ export default class GetRide {
   async execute(rideId: string): Promise<Output> {
     const rideData = await this.rideRepository.getRideById(rideId);
     return {
-      rideId: rideData.rideId,
-      passengerId: rideData.passengerId,
-      fromLat: rideData.fromLat,
-      fromLong: rideData.fromLong,
-      toLat: rideData.toLat,
-      toLong: rideData.toLong,
+      rideId: rideData.getRideId(),
+      passengerId: rideData.getPassengerId(),
+      fromLat: rideData.getFrom().getLat(),
+      fromLong: rideData.getFrom().getLong(),
+      toLat: rideData.getTo().getLat(),
+      toLong: rideData.getTo().getLong(),
       fare: rideData.calculateFare(),
       distance: rideData.calculateDistance(),
       status: rideData.status,

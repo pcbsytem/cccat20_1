@@ -16,11 +16,11 @@ export default class Signup {
 			input.isPassenger,
 			input.isDriver
 		);
-		const existingAccount = await this.accountRepository.getAccountByEmail(account.email);
+		const existingAccount = await this.accountRepository.getAccountByEmail(account.getEmail());
 		if (existingAccount) throw new Error("Account already exists");		
 		await this.accountRepository.saveAccount(account);
 		return {
-			accountId: account.accountId
+			accountId: account.getAccountId()
 		}
 	}
 }

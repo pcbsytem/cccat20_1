@@ -44,19 +44,30 @@ export class AccountRepositoryDatabase implements AccountRepository {
   async saveAccount(account: Account) {
     await this.connection.query(
       "insert into ccca.account (account_id, name, email, cpf, car_plate, is_passenger, is_driver, password) values ($1, $2, $3, $4, $5, $6, $7, $8)",
-      [account.accountId, account.name, account.email, account.cpf, account.carPlate, !!account.isPassenger, !!account.isDriver, account.password]
+      [
+        account.getAccountId(), 
+        account.getName(), 
+        account.getEmail(),
+        account.getCpf(),
+        account.getCarPlate(),
+        !!account.isPassenger,
+        !!account.isDriver,
+        account.getPassword()
+      ]
     );
   }
 }
 export class AccountRepositoryMemory implements AccountRepository {
   private accounts: Account[] = [];
 
-  async getAccountByEmail(email: string): Promise<any> {
-    return this.accounts.find((account) => account.email === email);
+  async getAccountByEmail(email: string): Promise<Account | undefined> {
+    return this.accounts.find((account: Account) => account.getEmail() === email);
   }
 
-  async getAccountById(accountId: string): Promise<any> {
-    return this.accounts.find((account) => account.accountId === accountId);
+  async getAccountById(accountId: string): Promise<Account> {
+    const account = this.accounts.find((account) => account.getAccountId() === accountId);
+    if (!account) throw new Error("Account not found");
+    return account
   }
 
   async saveAccount(account: any) {

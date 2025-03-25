@@ -14,12 +14,12 @@ export default class StartRide {
     const status = "in_progress";
     const ride = Ride.update(
       input.rideId,
-      outputRide.passengerId,
+      outputRide.getRideId(),
       input.driverId,
-      outputRide.fromLat,
-      outputRide.fromLong,
-      outputRide.toLat,
-      outputRide.toLong,
+      outputRide.getFrom().getLat(),
+      outputRide.getFrom().getLong(),
+      outputRide.getTo().getLat(),
+      outputRide.getTo().getLong(),
       outputRide.fare,
       outputRide.distance,
       status,

@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import { UUID } from './vo/UUID';
 
 export default class Position {
   constructor(
@@ -17,7 +17,7 @@ export default class Position {
     latitude: number,
     longitude: number
   ) {
-    const positionId = crypto.randomUUID();
+    const positionId = UUID.create().getValue();
     const date = new Date();
     return new Position(
       positionId, 
