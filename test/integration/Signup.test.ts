@@ -5,6 +5,7 @@ import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
 import GetAccount from '../../src/application/usecase/GetAccount';
 import Registry from '../../src/infra/di/Registry';
 import Signup from '../../src/application/usecase/Signup';
+import { Account } from '../../src/application/domain/Account';
 
 let signup: Signup
 let getAccount: GetAccount
@@ -16,7 +17,7 @@ beforeEach(() => {
   const accountRepository = new AccountRepositoryDatabase()
   Registry.getInstance().provide("accountRepository", accountRepository);
   signup = new Signup()
-  getAccount = new GetAccount(accountRepository)
+  getAccount = new GetAccount()
 })
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro', async () => {
@@ -119,7 +120,7 @@ test('Não deve fazer a criação da conta de uma usuário se a placa for invál
     carPlate: 'AAA999',
     isDriver: true,
   }
-  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid car plate"))
+  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid carPlate"))
 });
 
 // Test Patterns
@@ -130,11 +131,23 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com stub
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
+    carPlate: '',
     isPassenger: true,
+    isDriver: false
   }
   const saveAccountStub = sinon.stub(AccountRepositoryDatabase.prototype, 'saveAccount').resolves();
   const getAccountByEmailStub = sinon.stub(AccountRepositoryDatabase.prototype, 'getAccountByEmail').resolves();
-  const getAccountByIdStub = sinon.stub(AccountRepositoryDatabase.prototype, 'getAccountById').resolves(input);
+  const getAccountByIdStub = sinon.stub(AccountRepositoryDatabase.prototype, 'getAccountById').resolves(
+    Account.create(
+      input.name,
+      input.email,
+      input.cpf,
+      input.password,
+      input.carPlate,
+      input.isPassenger,
+      input.isDriver,
+    )
+  );
   const outputSignup = await signup.execute(input)
   expect(outputSignup.accountId).toBeDefined()
   const outputGetAccount = await getAccount.execute(outputSignup.accountId)
@@ -176,13 +189,25 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com mock
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
+    carPlate: '',
     isPassenger: true,
+    isDriver: false
   }
   const accountRepositoryMock = sinon.mock(AccountRepositoryDatabase.prototype)
   accountRepositoryMock.expects('saveAccount').once().resolves()
   const outputSignup = await signup.execute(input)
   expect(outputSignup.accountId).toBeDefined()
-  accountRepositoryMock.expects('getAccountById').once().withArgs(outputSignup.accountId).resolves(input)
+  accountRepositoryMock.expects('getAccountById').once().withArgs(outputSignup.accountId).resolves(
+    Account.create(
+      input.name,
+      input.email,
+      input.cpf,
+      input.password,
+      input.carPlate,
+      input.isPassenger,
+      input.isDriver,
+    )
+  )
   const outputGetAccount = await getAccount.execute(outputSignup.accountId)
   expect(outputGetAccount.name).toBe(input.name)
   expect(outputGetAccount.email).toBe(input.email)
@@ -196,7 +221,7 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com fake
   const accountRepository = new AccountRepositoryMemory()
   Registry.getInstance().provide("accountRepository", accountRepository);
   const signup = new Signup()
-  const getAccount = new GetAccount(accountRepository)
+  const getAccount = new GetAccount()
   const input = {
     name: 'John Doe',
     email: faker.internet.email(),

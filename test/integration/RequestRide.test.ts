@@ -38,7 +38,7 @@ test("Deve solicitar uma corrida", async () => {
     fromLat: -27.584905257808835,
     fromLong: -48.545022195325124,
     toLat: -27.496887588317275,
-    toLong: -48.522234807851476,
+    toLong: -48.545022195325124,
   }
   const outputRequestRide = await requestRide.execute(inputRequestRide);
   expect(outputRequestRide.rideId).toBeDefined();
@@ -68,7 +68,7 @@ test("Não deve solicitar uma corrida se não for um passageiro", async () => {
     fromLat: -27.584905257808835,
     fromLong: -48.545022195325124,
     toLat: -27.496887588317275,
-    toLong: -48.522234807851476,
+    toLong: -48.545022195325124,
   }
   await expect(() => requestRide.execute(inputRequestRide)).rejects.toThrow(new Error("The request must be a passenger"));
 });
@@ -87,7 +87,7 @@ test("Não deve solicitar uma corrida se o passageiro já tiver uma corrida em a
     fromLat: -27.584905257808835,
     fromLong: -48.545022195325124,
     toLat: -27.496887588317275,
-    toLong: -48.522234807851476,
+    toLong: -48.545022195325124,
   }
   await requestRide.execute(inputRequestRide);
   await expect(() => requestRide.execute(inputRequestRide)).rejects.toThrow(new Error("The request already have an active ride"));
@@ -107,7 +107,7 @@ test("Não deve solicitar uma corrida se latitude ou longitude estiverem inváli
     fromLat: -140,
     fromLong: -48.545022195325124,
     toLat: -27.496887588317275,
-    toLong: -48.522234807851476,
+    toLong: -48.545022195325124,
   }
   await expect(() => requestRide.execute(inputRequestRide)).rejects.toThrow(new Error("The latitude is invalid"));
 });
