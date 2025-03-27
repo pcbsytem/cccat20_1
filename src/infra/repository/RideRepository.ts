@@ -44,12 +44,6 @@ export class RideRepositoryDatabase implements RideRepository {
         ride.getRideId()
       ]
     );
-    await this.connection.query("delete from ccca.position where ride_id = $1", [ride.getRideId()]);
-    for (const position of ride.getPositions()) {
-      await this.connection.query("insert into ccca.position (position_id, ride_id, lat, long) values ($1, $2, $3, $4)", [
-        position.getPositionId(), position.getRideId(), position.getCoord().getLat(), position.getCoord().getLong()
-      ]);
-    }
   }
 
   async updateRideStatus(ride: Ride): Promise<void> {
@@ -77,12 +71,6 @@ export class RideRepositoryDatabase implements RideRepository {
       data.status,
       data.date
     );
-    const positionsData = await this.connection.query("select * from ccca.position where ride_id = $1", [ride.getRideId()]);
-    const positions = [];
-    for (const positionData of positionsData) {
-      positions.push(new Position(positionData.position_id, positionData.ride_id, parseFloat(positionData.lat), parseFloat(positionData.long)));
-    }
-    ride.setPositions(positions);
     return ride;
   }
 

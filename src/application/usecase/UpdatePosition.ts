@@ -1,16 +1,18 @@
-import RideRepository from '../../infra/repository/RideRepository';
 import { inject } from '../../infra/di/Registry';
-import Ride from '../domain/Ride';
+import RideRepository from '../../infra/repository/RideRepository';
+import Position from '../domain/Position';
+import PositionRepository from '../../infra/repository/PositionRepository';
 
 
 export default class UpdatePosition {
+  @inject("positionRepository")
+  positionRepository!: PositionRepository;
   @inject("rideRepository")
   rideRepository!: RideRepository;
 
   async execute(input: Input): Promise<void> {
-    const ride = await this.rideRepository.getRideById(input.rideId);
-    ride.updatePosition(input.lat, input.long);
-    await this.rideRepository.updateRide(ride);
+    const position = Position.create(input.rideId, input.lat, input.long);
+    this.positionRepository.savePosition(position);
   }
 }
 

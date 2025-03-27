@@ -9,7 +9,6 @@ export default class Ride {
   private driverId?: UUID;
   private from: Coord;
   private to: Coord;
-  private positions: Position[];
 
   constructor(
     rideId: string,
@@ -29,7 +28,6 @@ export default class Ride {
     if (driverId) this.driverId = new UUID(driverId);
     this.from = new Coord(fromLat, fromLong);
     this.to = new Coord(toLat, toLong);
-    this.positions = [];
   }
 
   static create (
@@ -87,13 +85,14 @@ export default class Ride {
     );
   }
 
-  calculateDistance () {
+  calculateDistance (positions?: Position[]) {
+    if (!positions) return 0;
     if (["requested", "accepted"].includes(this.status)) {
       return this.calculateDistanceCoord(this.from, this.to);
     }
     let total = 0;
-    for (const [index, position] of this.positions.entries()) {
-      const nextPosition = this.positions[index + 1];
+    for (const [index, position] of positions.entries()) {
+      const nextPosition = positions[index + 1];
       if (!nextPosition) break;
       total += this.calculateDistanceCoord(position.getCoord(), nextPosition.getCoord())
     }
@@ -116,8 +115,8 @@ export default class Ride {
     return Math.round(distance);
   }
 
-  calculateFare () {
-    const distance = this.calculateDistance();
+  calculateFare (positions?: Position[]) {
+    const distance = this.calculateDistance(positions);
     return distance * 2.1;
   }
 
@@ -162,17 +161,5 @@ export default class Ride {
   start () {
     if (this.status !== "accepted") throw new Error("Invalid status");
     this.status = "in_progress";
-  }
-
-  updatePosition (lat: number, long: number) {
-    this.positions.push(Position.create(this.getRideId(), lat, long));
-  }
-
-  getPositions () {
-    return this.positions;
-  }
-
-  setPositions (positions: Position[]) {
-    this.positions = positions;
   }
 }
