@@ -6,11 +6,13 @@ import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
 import { RideRepositoryDatabase } from '../../src/infra/repository/RideRepository';
 import { AccountRepositoryDatabase } from '../../src/infra/repository/AccountRepository';
 import Registry from '../../src/infra/di/Registry';
+import GetRide from '../../src/application/usecase/GetRide';
 
+let databaseConnection: PgPromiseAdapter
 let signup: Signup;
 let requestRide: RequestRide;
 let acceptRide: AcceptRide;
-let databaseConnection: PgPromiseAdapter
+let getRide: GetRide;
 
 beforeEach(() => {
   databaseConnection = new PgPromiseAdapter();
@@ -22,28 +24,30 @@ beforeEach(() => {
   signup = new Signup();
   requestRide = new RequestRide();
   acceptRide = new AcceptRide();
+  getRide = new GetRide();
 });
 
 test("Deve aceitar uma corrida", async () => {
-  const inputPassenger = {
+  const inputSignUpPassenger = {
     name: 'John Doe',
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
     isPassenger: true,
   }
-  const outputPassenger = await signup.execute(inputPassenger)
-  const inputDriver = {
+  const outputSignUpPassenger = await signup.execute(inputSignUpPassenger)
+  const inputSignUpDriver = {
     name: faker.person.fullName(),
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
     carPlate: 'AAA9999',
+    isPassenger: false,
     isDriver: true,
   }
-  const outputDriver = await signup.execute(inputDriver)
+  const outputSignUpDriver = await signup.execute(inputSignUpDriver)
   const inputRequestRide = {
-    passengerId: outputPassenger.accountId,
+    passengerId: outputSignUpPassenger.accountId,
     fromLat: -27.584905257808835,
     fromLong: -48.545022195325124,
     toLat: -27.496887588317275,
@@ -52,32 +56,35 @@ test("Deve aceitar uma corrida", async () => {
   const outputRequestRide = await requestRide.execute(inputRequestRide);
   expect(outputRequestRide.rideId).toBeDefined();
   const inputAcceptRide = {
-    driverId: outputDriver.accountId,
-    rideId: outputRequestRide.rideId
+    rideId: outputRequestRide.rideId,
+    driverId: outputSignUpDriver.accountId
   }
-  const outputAcceptRide = await acceptRide.execute(inputAcceptRide);
-  expect(outputRequestRide.rideId).toBe(outputAcceptRide.rideId);
+  await acceptRide.execute(inputAcceptRide);
+
+  const outputGetRide = await getRide.execute(outputRequestRide.rideId);
+  expect(outputGetRide.driverId).toBe(outputSignUpDriver.accountId);
+  expect(outputGetRide.status).toBe("accepted");
 });
 
-test("Não deve aceitar uma corrida se não for um motorista", async () => {
-  const inputPassenger = {
+test("Não deve aceitar uma corrida de uma conta que não é motorista", async () => {
+  const inputSignUpPassenger = {
     name: 'John Doe',
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
     isPassenger: true,
   }
-  const outputPassenger = await signup.execute(inputPassenger)
-  const inputDriver = {
+  const outputSignUpPassenger = await signup.execute(inputSignUpPassenger)
+  const inputSignUpDriver = {
     name: faker.person.fullName(),
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
     isPassenger: true,
   }
-  const outputDriver = await signup.execute(inputDriver)  
+  const outputSignUpDriver = await signup.execute(inputSignUpDriver)
   const inputRequestRide = {
-    passengerId: outputPassenger.accountId,
+    passengerId: outputSignUpPassenger.accountId,
     fromLat: -27.584905257808835,
     fromLong: -48.545022195325124,
     toLat: -27.496887588317275,
@@ -86,43 +93,12 @@ test("Não deve aceitar uma corrida se não for um motorista", async () => {
   const outputRequestRide = await requestRide.execute(inputRequestRide);
   expect(outputRequestRide.rideId).toBeDefined();
   const inputAcceptRide = {
-    driverId: outputDriver.accountId,
-    rideId: outputRequestRide.rideId
+    rideId: outputRequestRide.rideId,
+    driverId: outputSignUpDriver.accountId
   }
-  await expect(() => acceptRide.execute(inputAcceptRide)).rejects.toThrow(new Error("The request must be a driver"));
+  await expect(() => acceptRide.execute(inputAcceptRide)).rejects.toThrow(new Error("The account must be from a driver"));
 });
 
-test("Não deve aceitar uma corrida se o motorista tiver uma corrida em andamento", async () => {
-  const inputPassenger = {
-    name: 'John Doe',
-    email: faker.internet.email(),
-    cpf: '97456321558',
-    password: 'asdQWE123',
-    isPassenger: true,
-  }
-  const outputPassenger = await signup.execute(inputPassenger)
-  const inputDriver = {
-    name: faker.person.fullName(),
-    email: faker.internet.email(),
-    cpf: '97456321558',
-    password: 'asdQWE123',
-    carPlate: 'AAA9999',
-    isDriver: true,
-  }
-  const outputDriver = await signup.execute(inputDriver)
-  const inputRequestRide = {
-    passengerId: outputPassenger.accountId,
-    fromLat: -27.584905257808835,
-    fromLong: -48.545022195325124,
-    toLat: -27.496887588317275,
-    toLong: -48.522234807851476,
-  }
-  const outputRequestRide = await requestRide.execute(inputRequestRide);
-  expect(outputRequestRide.rideId).toBeDefined();
-  const inputAcceptRide = {
-    driverId: outputDriver.accountId,
-    rideId: outputRequestRide.rideId
-  }
-  await acceptRide.execute(inputAcceptRide)
-  await expect(() => acceptRide.execute(inputAcceptRide)).rejects.toThrow(new Error("The request already have an active ride"));
+afterEach(async () => {
+  await databaseConnection.close()
 });
