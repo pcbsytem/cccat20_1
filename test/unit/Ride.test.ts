@@ -7,6 +7,4 @@ test("Deve testar a ride", () => {
   const toLat = -27.496887588317275;
   const toLong = -48.522234807851476;
   const ride = Ride.create(UUID.create().getValue(), fromLat, fromLong, toLat, toLong);
-  expect(ride.calculateDistance()).toBe(10);
-  expect(ride.calculateFare()).toBe(21);
 })

@@ -9,6 +9,7 @@ import Registry from '../../src/infra/di/Registry';
 import GetRide from '../../src/application/usecase/GetRide';
 import StartRide from '../../src/application/usecase/StartRide';
 import UpdatePosition from '../../src/application/usecase/UpdatePosition';
+import { PositionRepositoryDatabase } from '../../src/infra/repository/PositionRepository';
 
 let databaseConnection: PgPromiseAdapter
 let signup: Signup;
@@ -23,8 +24,10 @@ beforeEach(() => {
   Registry.getInstance().provide("databaseConnection", databaseConnection);
   const accountRepository = new AccountRepositoryDatabase();
   const rideRepository = new RideRepositoryDatabase();
+  const positionRepository = new PositionRepositoryDatabase();
   Registry.getInstance().provide("accountRepository", accountRepository);
   Registry.getInstance().provide("rideRepository", rideRepository);
+  Registry.getInstance().provide("positionRepository", positionRepository);
   signup = new Signup();
   requestRide = new RequestRide();
   acceptRide = new AcceptRide();
