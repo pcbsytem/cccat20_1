@@ -1,4 +1,6 @@
 import Position from './Position';
+import DistanceCalculator from './service/DistanceCalculator';
+import FareCalculator from './service/FareCalculator';
 import { Coord } from './vo/Coord';
 import { UUID } from './vo/UUID';
 
@@ -88,36 +90,20 @@ export default class Ride {
   calculateDistance (positions?: Position[]) {
     if (!positions) return 0;
     if (["requested", "accepted"].includes(this.status)) {
-      return this.calculateDistanceCoord(this.from, this.to);
+      return DistanceCalculator.calculate(this.from, this.to);
     }
     let total = 0;
     for (const [index, position] of positions.entries()) {
       const nextPosition = positions[index + 1];
       if (!nextPosition) break;
-      total += this.calculateDistanceCoord(position.getCoord(), nextPosition.getCoord())
+      total += DistanceCalculator.calculate(position.getCoord(), nextPosition.getCoord())
     }
     return total;
-  }  
-  
-  calculateDistanceCoord (from: Coord, to: Coord) {
-    const earthRadius = 6371;
-    const degreesToRadians = Math.PI / 180;
-    const deltaLat = (to.getLat() - from.getLat()) * degreesToRadians;
-    const deltaLong = (to.getLong() - from.getLong()) * degreesToRadians;
-    const a = 
-      Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-      Math.cos(from.getLat() * degreesToRadians) * 
-      Math.cos(to.getLat() * degreesToRadians) *
-      Math.sin(deltaLong / 2) *
-      Math.sin(deltaLong / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = earthRadius * c;
-    return Math.round(distance);
   }
 
   calculateFare (positions?: Position[]) {
     const distance = this.calculateDistance(positions);
-    return distance * 2.1;
+    return FareCalculator.calculate(distance);
   }
 
   getFrom () {
