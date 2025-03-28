@@ -1,7 +1,7 @@
 import RideRepository from "../../infra/repository/RideRepository";
 import AccountRepository from "../../infra/repository/AccountRepository";
 import { inject } from '../../infra/di/Registry';
-import Ride from '../../application/domain/Ride';
+import Ride from '../../domain/Ride';
 
 export default class RequestRide {
   @inject("accountRepository")

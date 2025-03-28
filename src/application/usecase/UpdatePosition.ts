@@ -1,9 +1,9 @@
 import { inject } from '../../infra/di/Registry';
 import RideRepository from '../../infra/repository/RideRepository';
-import Position from '../domain/Position';
 import PositionRepository from '../../infra/repository/PositionRepository';
-import DistanceCalculator from '../domain/service/DistanceCalculator';
-import FareCalculator from '../domain/service/FareCalculator';
+import Position from '../../domain/Position';
+import DistanceCalculator from '../../domain/service/DistanceCalculator';
+import FareCalculator from '../../domain/service/FareCalculator';
 
 
 export default class UpdatePosition {

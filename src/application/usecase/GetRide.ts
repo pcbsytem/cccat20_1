@@ -1,7 +1,7 @@
 import { inject } from '../../infra/di/Registry';
 import RideRepository from '../../infra/repository/RideRepository';
 import PositionRepository from '../../infra/repository/PositionRepository';
-import Position from '../domain/Position';
+import Position from '../../domain/Position';
 
 export default class GetRide {
   @inject("positionRepository")

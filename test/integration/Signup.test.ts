@@ -5,7 +5,7 @@ import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
 import GetAccount from '../../src/application/usecase/GetAccount';
 import Registry from '../../src/infra/di/Registry';
 import Signup from '../../src/application/usecase/Signup';
-import { Account } from '../../src/application/domain/Account';
+import { Account } from '../../src/domain/Account';
 
 let signup: Signup
 let getAccount: GetAccount

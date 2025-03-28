@@ -1,5 +1,5 @@
-import Ride from '../../src/application/domain/Ride';
-import { UUID } from '../../src/application/domain/vo/UUID';
+import Ride from '../../src/domain/Ride';
+import { UUID } from '../../src/domain/vo/UUID';
 
 test("Deve testar a ride", () => {
   const fromLat = -27.584905257808835;

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { Account } from '../../src/application/domain/Account';
+import { Account } from '../../src/domain/Account';
 
 test("Deve criar uma conta de motorista", () => {
   const account = Account.create(

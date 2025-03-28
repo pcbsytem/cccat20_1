@@ -1,4 +1,4 @@
-import Position from '../../application/domain/Position';
+import Position from '../../domain/Position';
 import DatabaseConnection from '../database/DatabaseConnection';
 import { inject } from '../di/Registry';
 

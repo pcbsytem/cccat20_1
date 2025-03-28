@@ -1,6 +1,3 @@
-import Position from './Position';
-import DistanceCalculator from './service/DistanceCalculator';
-import FareCalculator from './service/FareCalculator';
 import { Coord } from './vo/Coord';
 import { UUID } from './vo/UUID';
 
