@@ -20,8 +20,8 @@ export default class Ride {
     fromLong: number,
     toLat: number,
     toLong: number,
-    readonly fare: number,
-    readonly distance: number,
+    private fare: number,
+    private distance: number,
     public status: string,
     readonly date: Date
   ) {
@@ -87,25 +87,6 @@ export default class Ride {
     );
   }
 
-  calculateDistance (positions?: Position[]) {
-    if (!positions) return 0;
-    if (["requested", "accepted"].includes(this.status)) {
-      return DistanceCalculator.calculate(this.from, this.to);
-    }
-    let total = 0;
-    for (const [index, position] of positions.entries()) {
-      const nextPosition = positions[index + 1];
-      if (!nextPosition) break;
-      total += DistanceCalculator.calculate(position.getCoord(), nextPosition.getCoord())
-    }
-    return total;
-  }
-
-  calculateFare (positions?: Position[]) {
-    const distance = this.calculateDistance(positions);
-    return FareCalculator.calculate(distance);
-  }
-
   getFrom () {
     return this.from;
   }
@@ -147,5 +128,21 @@ export default class Ride {
   start () {
     if (this.status !== "accepted") throw new Error("Invalid status");
     this.status = "in_progress";
+  }
+
+  getFare () {
+    return this.fare;
+  }
+
+  setFare (fare: number) {
+    this.fare = fare;
+  }
+
+  getDistance () {
+    return this.distance;
+  }
+
+  setDistance (distance: number) {
+    return this.distance = distance;
   }
 }

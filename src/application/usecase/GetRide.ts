@@ -1,6 +1,7 @@
 import { inject } from '../../infra/di/Registry';
 import RideRepository from '../../infra/repository/RideRepository';
 import PositionRepository from '../../infra/repository/PositionRepository';
+import Position from '../domain/Position';
 
 export default class GetRide {
   @inject("positionRepository")
@@ -9,22 +10,24 @@ export default class GetRide {
   rideRepository!: RideRepository;
 
   async execute(rideId: string): Promise<Output> {
-    const rideData = await this.rideRepository.getRideById(rideId);
+    const ride = await this.rideRepository.getRideById(rideId);
     const positions = await this.positionRepository.getPositionsByRideId(rideId);
-    const distance = rideData.calculateDistance(positions);
-    const fare = rideData.calculateFare(positions);
     return {
-      rideId: rideData.getRideId(),
-      passengerId: rideData.getPassengerId(),
-      driverId: rideData.getDriverId(),
-      fromLat: rideData.getFrom().getLat(),
-      fromLong: rideData.getFrom().getLong(),
-      toLat: rideData.getTo().getLat(),
-      toLong: rideData.getTo().getLong(),
-      fare,
-      distance,
-      status: rideData.getStatus(),
-      date: rideData.date
+      rideId: ride.getRideId(),
+      passengerId: ride.getPassengerId(),
+      driverId: ride.getDriverId(),
+      fromLat: ride.getFrom().getLat(),
+      fromLong: ride.getFrom().getLong(),
+      toLat: ride.getTo().getLat(),
+      toLong: ride.getTo().getLong(),
+      fare: ride.getFare(),
+      distance: ride.getDistance(),
+      status: ride.getStatus(),
+      date: ride.date,
+      positions: positions.map((position: Position) => ({ 
+        lat: position.getCoord().getLat(), 
+        long: position.getCoord().getLong()
+      }))
     };
   }
 }
@@ -40,5 +43,6 @@ type Output = {
   fare: number,
   distance: number,
   status: string,
-  date: Date
+  date: Date,
+  positions: { lat: number, long: number}[]
 }
