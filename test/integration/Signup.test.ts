@@ -1,24 +1,33 @@
 import sinon from 'sinon';
 import { faker } from '@faker-js/faker';
-import { AccountRepositoryDatabase, AccountRepositoryMemory } from '../../src/infra/repository/AccountRepository';
+import {
+  AccountRepositoryDatabase,
+  AccountRepositoryMemory,
+  AccountRepositoryORM
+} from '../../src/infra/repository/AccountRepository';
 import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
 import GetAccount from '../../src/application/usecase/GetAccount';
 import Registry from '../../src/infra/di/Registry';
 import Signup from '../../src/application/usecase/Signup';
 import { Account } from '../../src/domain/Account';
+import ORM from '../../src/infra/ORM/ORM';
 
-let signup: Signup
-let getAccount: GetAccount
-let databaseConnection: PgPromiseAdapter
+let signup: Signup;
+let getAccount: GetAccount;
+let databaseConnection: PgPromiseAdapter;
 
 beforeEach(() => {
   databaseConnection = new PgPromiseAdapter();
-  Registry.getInstance().provide("databaseConnection", databaseConnection);
-  const accountRepository = new AccountRepositoryDatabase()
-  Registry.getInstance().provide("accountRepository", accountRepository);
-  signup = new Signup()
-  getAccount = new GetAccount()
-})
+  Registry.getInstance().provide('databaseConnection', databaseConnection);
+  const orm = new ORM();
+  Registry.getInstance().provide('orm', orm);
+  const accountRepository = new AccountRepositoryORM();
+  // const accountRepository = new AccountRepositoryDatabase()
+  // const accountRepository = new AccountRepositoryMemory()
+  Registry.getInstance().provide('accountRepository', accountRepository);
+  signup = new Signup();
+  getAccount = new GetAccount();
+});
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro', async () => {
   const input = {
@@ -26,15 +35,17 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro', async 
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
+    carPlate: '',
     isPassenger: true,
-  }
-  const outputSignup = await signup.execute(input)
-  expect(outputSignup.accountId).toBeDefined()
-  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
-  expect(outputGetAccount.name).toBe(input.name)
-  expect(outputGetAccount.email).toBe(input.email)
-  expect(outputGetAccount.cpf).toBe(input.cpf)
-  expect(outputGetAccount.password).toBe(input.password)
+    isDriver: false
+  };
+  const outputSignup = await signup.execute(input);
+  expect(outputSignup.accountId).toBeDefined();
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+  expect(outputGetAccount.name).toBe(input.name);
+  expect(outputGetAccount.email).toBe(input.email);
+  expect(outputGetAccount.cpf).toBe(input.cpf);
+  expect(outputGetAccount.password).toBe(input.password);
 });
 
 test('Deve fazer a criação da conta de um usuário do tipo motorista', async () => {
@@ -44,15 +55,15 @@ test('Deve fazer a criação da conta de um usuário do tipo motorista', async (
     cpf: '97456321558',
     password: 'asdQWE123',
     carPlate: 'AAA9999',
-    isDriver: true,
-  }
-  const outputSignup = await signup.execute(input)
-  expect(outputSignup.accountId).toBeDefined()
-  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
-  expect(outputGetAccount.name).toBe(input.name)
-  expect(outputGetAccount.email).toBe(input.email)
-  expect(outputGetAccount.cpf).toBe(input.cpf)
-  expect(outputGetAccount.password).toBe(input.password)
+    isDriver: true
+  };
+  const outputSignup = await signup.execute(input);
+  expect(outputSignup.accountId).toBeDefined();
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+  expect(outputGetAccount.name).toBe(input.name);
+  expect(outputGetAccount.email).toBe(input.email);
+  expect(outputGetAccount.cpf).toBe(input.cpf);
+  expect(outputGetAccount.password).toBe(input.password);
 });
 
 test('Não deve fazer a criação da conta de uma usuário se o nome for inválido', async () => {
@@ -61,9 +72,11 @@ test('Não deve fazer a criação da conta de uma usuário se o nome for inváli
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
-    isPassenger: true,
-  }
-  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid name"));
+    isPassenger: true
+  };
+  await expect(() => signup.execute(input)).rejects.toThrow(
+    new Error('Invalid name')
+  );
 });
 
 test('Não deve fazer a criação da conta de uma usuário se o email for inválido', async () => {
@@ -72,9 +85,13 @@ test('Não deve fazer a criação da conta de uma usuário se o email for invál
     email: `john.doe${Math.random()}`,
     cpf: '97456321558',
     password: 'asdQWE123',
+    carPlate: '',
     isPassenger: true,
-  }
-  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid email"))
+    isDriver: false
+  };
+  await expect(() => signup.execute(input)).rejects.toThrow(
+    new Error('Invalid email')
+  );
 });
 
 test('Não deve fazer a criação da conta de uma usuário se o cpf for inválido', async () => {
@@ -83,9 +100,13 @@ test('Não deve fazer a criação da conta de uma usuário se o cpf for inválid
     email: faker.internet.email(),
     cpf: '9745632155',
     password: 'asdQWE123',
+    carPlate: '',
     isPassenger: true,
-  }
-  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid cpf"))
+    isDriver: false
+  };
+  await expect(() => signup.execute(input)).rejects.toThrow(
+    new Error('Invalid cpf')
+  );
 });
 
 test('Não deve fazer a criação da conta de uma usuário se o password for inválido', async () => {
@@ -94,9 +115,11 @@ test('Não deve fazer a criação da conta de uma usuário se o password for inv
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE',
-    isPassenger: true,
-  }
-  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid password"))
+    isPassenger: true
+  };
+  await expect(() => signup.execute(input)).rejects.toThrow(
+    new Error('Invalid password')
+  );
 });
 
 test('Não deve fazer a criação da conta de uma usuário se a conta estiver duplicada', async () => {
@@ -105,10 +128,14 @@ test('Não deve fazer a criação da conta de uma usuário se a conta estiver du
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
+    carPlate: '',
     isPassenger: true,
-  }
-  await signup.execute(input)
-  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Account already exists"))
+    isDriver: false
+  };
+  await signup.execute(input);
+  await expect(() => signup.execute(input)).rejects.toThrow(
+    new Error('Account already exists')
+  );
 });
 
 test('Não deve fazer a criação da conta de uma usuário se a placa for inválida', async () => {
@@ -119,8 +146,11 @@ test('Não deve fazer a criação da conta de uma usuário se a placa for invál
     password: 'asdQWE123',
     carPlate: 'AAA999',
     isDriver: true,
-  }
-  await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid carPlate"))
+    isPassenger: false
+  };
+  await expect(() => signup.execute(input)).rejects.toThrow(
+    new Error('Invalid carPlate')
+  );
 });
 
 // Test Patterns
@@ -134,53 +164,67 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com stub
     carPlate: '',
     isPassenger: true,
     isDriver: false
-  }
-  const saveAccountStub = sinon.stub(AccountRepositoryDatabase.prototype, 'saveAccount').resolves();
-  const getAccountByEmailStub = sinon.stub(AccountRepositoryDatabase.prototype, 'getAccountByEmail').resolves();
-  const getAccountByIdStub = sinon.stub(AccountRepositoryDatabase.prototype, 'getAccountById').resolves(
-    Account.create(
-      input.name,
-      input.email,
-      input.cpf,
-      input.password,
-      input.carPlate,
-      input.isPassenger,
-      input.isDriver,
-    )
-  );
-  const outputSignup = await signup.execute(input)
-  expect(outputSignup.accountId).toBeDefined()
-  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
-  expect(outputGetAccount.name).toBe(input.name)
-  expect(outputGetAccount.email).toBe(input.email)
-  expect(outputGetAccount.cpf).toBe(input.cpf)
-  expect(outputGetAccount.password).toBe(input.password)
-  saveAccountStub.restore()
-  getAccountByEmailStub.restore()
-  getAccountByIdStub.restore()
+  };
+  const saveAccountStub = sinon
+    .stub(AccountRepositoryDatabase.prototype, 'saveAccount')
+    .resolves();
+  const getAccountByEmailStub = sinon
+    .stub(AccountRepositoryDatabase.prototype, 'getAccountByEmail')
+    .resolves();
+  const getAccountByIdStub = sinon
+    .stub(AccountRepositoryDatabase.prototype, 'getAccountById')
+    .resolves(
+      Account.create(
+        input.name,
+        input.email,
+        input.cpf,
+        input.password,
+        input.carPlate,
+        input.isPassenger,
+        input.isDriver
+      )
+    );
+  const outputSignup = await signup.execute(input);
+  expect(outputSignup.accountId).toBeDefined();
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+  expect(outputGetAccount.name).toBe(input.name);
+  expect(outputGetAccount.email).toBe(input.email);
+  expect(outputGetAccount.cpf).toBe(input.cpf);
+  expect(outputGetAccount.password).toBe(input.password);
+  saveAccountStub.restore();
+  getAccountByEmailStub.restore();
+  getAccountByIdStub.restore();
 });
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro com spy', async () => {
-  const saveAccountSpy = sinon.spy(AccountRepositoryDatabase.prototype, 'saveAccount');
-  const getAccountByIdSpy = sinon.spy(AccountRepositoryDatabase.prototype, 'getAccountById');
+  const saveAccountSpy = sinon.spy(
+    AccountRepositoryORM.prototype,
+    'saveAccount'
+  );
+  const getAccountByIdSpy = sinon.spy(
+    AccountRepositoryORM.prototype,
+    'getAccountById'
+  );
   const input = {
     name: 'John Doe',
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
+    carPlate: '',
     isPassenger: true,
-  }
-  const outputSignup = await signup.execute(input)
-  expect(outputSignup.accountId).toBeDefined()
-  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
-  expect(outputGetAccount.name).toBe(input.name)
-  expect(outputGetAccount.email).toBe(input.email)
-  expect(outputGetAccount.cpf).toBe(input.cpf)
-  expect(outputGetAccount.password).toBe(input.password)
-  expect(saveAccountSpy.calledOnce).toBe(true)
-  expect(getAccountByIdSpy.calledWith(outputSignup.accountId)).toBe(true)
-  saveAccountSpy.restore()
-  getAccountByIdSpy.restore()
+    isDriver: false
+  };
+  const outputSignup = await signup.execute(input);
+  expect(outputSignup.accountId).toBeDefined();
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+  expect(outputGetAccount.name).toBe(input.name);
+  expect(outputGetAccount.email).toBe(input.email);
+  expect(outputGetAccount.cpf).toBe(input.cpf);
+  expect(outputGetAccount.password).toBe(input.password);
+  expect(saveAccountSpy.calledOnce).toBe(true);
+  expect(getAccountByIdSpy.calledWith(outputSignup.accountId)).toBe(true);
+  saveAccountSpy.restore();
+  getAccountByIdSpy.restore();
 });
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro com mock', async () => {
@@ -192,53 +236,57 @@ test('Deve fazer a criação da conta de um usuário do tipo passageiro com mock
     carPlate: '',
     isPassenger: true,
     isDriver: false
-  }
-  const accountRepositoryMock = sinon.mock(AccountRepositoryDatabase.prototype)
-  accountRepositoryMock.expects('saveAccount').once().resolves()
-  const outputSignup = await signup.execute(input)
-  expect(outputSignup.accountId).toBeDefined()
-  accountRepositoryMock.expects('getAccountById').once().withArgs(outputSignup.accountId).resolves(
-    Account.create(
-      input.name,
-      input.email,
-      input.cpf,
-      input.password,
-      input.carPlate,
-      input.isPassenger,
-      input.isDriver,
-    )
-  )
-  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
-  expect(outputGetAccount.name).toBe(input.name)
-  expect(outputGetAccount.email).toBe(input.email)
-  expect(outputGetAccount.cpf).toBe(input.cpf)
-  expect(outputGetAccount.password).toBe(input.password)
-  accountRepositoryMock.verify()
-  accountRepositoryMock.restore()
+  };
+  const accountRepositoryMock = sinon.mock(AccountRepositoryDatabase.prototype);
+  accountRepositoryMock.expects('saveAccount').once().resolves();
+  const outputSignup = await signup.execute(input);
+  expect(outputSignup.accountId).toBeDefined();
+  accountRepositoryMock
+    .expects('getAccountById')
+    .once()
+    .withArgs(outputSignup.accountId)
+    .resolves(
+      Account.create(
+        input.name,
+        input.email,
+        input.cpf,
+        input.password,
+        input.carPlate,
+        input.isPassenger,
+        input.isDriver
+      )
+    );
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+  expect(outputGetAccount.name).toBe(input.name);
+  expect(outputGetAccount.email).toBe(input.email);
+  expect(outputGetAccount.cpf).toBe(input.cpf);
+  expect(outputGetAccount.password).toBe(input.password);
+  accountRepositoryMock.restore();
 });
 
 test('Deve fazer a criação da conta de um usuário do tipo passageiro com fake', async () => {
-  const accountRepository = new AccountRepositoryMemory()
-  Registry.getInstance().provide("accountRepository", accountRepository);
-  const signup = new Signup()
-  const getAccount = new GetAccount()
+  const accountRepository = new AccountRepositoryMemory();
+  Registry.getInstance().provide('accountRepository', accountRepository);
+  const signup = new Signup();
+  const getAccount = new GetAccount();
   const input = {
     name: 'John Doe',
     email: faker.internet.email(),
     cpf: '97456321558',
     password: 'asdQWE123',
+    carPlate: '',
     isPassenger: true,
-  }
-  const outputSignup = await signup.execute(input)
-  expect(outputSignup.accountId).toBeDefined()
-  const outputGetAccount = await getAccount.execute(outputSignup.accountId)
-  expect(outputGetAccount.name).toBe(input.name)
-  expect(outputGetAccount.email).toBe(input.email)
-  expect(outputGetAccount.cpf).toBe(input.cpf)
-  expect(outputGetAccount.password).toBe(input.password)
+    isDriver: false
+  };
+  const outputSignup = await signup.execute(input);
+  expect(outputSignup.accountId).toBeDefined();
+  const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+  expect(outputGetAccount.name).toBe(input.name);
+  expect(outputGetAccount.email).toBe(input.email);
+  expect(outputGetAccount.cpf).toBe(input.cpf);
+  expect(outputGetAccount.password).toBe(input.password);
 });
 
 afterEach(async () => {
-  await databaseConnection.close()
+  await databaseConnection.close();
 });
-
