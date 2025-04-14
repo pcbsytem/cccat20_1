@@ -3,7 +3,7 @@ import RideRepository from '../../infra/repository/RideRepository';
 import PositionRepository from '../../infra/repository/PositionRepository';
 import Position from '../../domain/entity/Position';
 import DistanceCalculator from '../../domain/service/DistanceCalculator';
-import FareCalculator from '../../domain/service/FareCalculator';
+import { FareCalculatorFactory } from '../../domain/service/FareCalculator';
 
 export default class UpdatePosition {
   @inject('positionRepository')
@@ -12,17 +12,30 @@ export default class UpdatePosition {
   rideRepository!: RideRepository;
 
   async execute(input: Input): Promise<void> {
-    const position = Position.create(input.rideId, input.lat, input.long);
-    await this.positionRepository.savePosition(position);
-    const positions = await this.positionRepository.getPositionsByRideId(
+    const lastPosition = await this.positionRepository.getLastPositionByRideId(
       input.rideId
     );
-    const distance = DistanceCalculator.calculateFromPositions(positions);
-    const fare = FareCalculator.calculate(distance);
+    const actualPosition = Position.create(
+      input.rideId,
+      input.lat,
+      input.long,
+      input.date
+    );
+    await this.positionRepository.savePosition(actualPosition);
     const ride = await this.rideRepository.getRideById(input.rideId);
-    ride.setDistance(distance);
-    ride.setFare(fare);
-    await this.rideRepository.updateRide(ride);
+
+    if (lastPosition) {
+      const distance = DistanceCalculator.calculateFromPositions([
+        lastPosition,
+        actualPosition
+      ]);
+      const fare = FareCalculatorFactory.create(actualPosition.date).calculate(
+        distance
+      );
+      ride.setDistance(ride.getDistance() + distance);
+      ride.setFare(ride.getFare() + fare);
+      await this.rideRepository.updateRide(ride);
+    }
   }
 }
 
@@ -30,4 +43,5 @@ type Input = {
   rideId: string;
   lat: number;
   long: number;
+  date?: Date;
 };
