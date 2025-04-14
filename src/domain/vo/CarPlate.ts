@@ -1,8 +1,8 @@
-export class CarPlate {
+export default class CarPlate {
   private value: string;
 
   constructor(carPlate: string) {
-    if (!this.validateCarPlate(carPlate)) throw new Error("Invalid carPlate");
+    if (!this.validateCarPlate(carPlate)) throw new Error('Invalid carPlate');
     this.value = carPlate;
   }
 

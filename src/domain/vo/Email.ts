@@ -1,8 +1,8 @@
-export class Email {
+export default class Email {
   private value: string;
 
   constructor(email: string) {
-    if (!this.validateEmail(email)) throw new Error("Invalid email");
+    if (!this.validateEmail(email)) throw new Error('Invalid email');
     this.value = email;
   }
 

@@ -1,11 +1,10 @@
-import { Name } from './vo/Name';
-import { Email } from './vo/Email';
-import { Cpf } from './vo/Cpf';
-import { CarPlate } from './vo/CarPlate';
-import { Password } from './vo/Password';
-import { UUID } from './vo/UUID';
+import CarPlate from '../vo/CarPlate';
+import Cpf from '../vo/Cpf';
+import Email from '../vo/Email';
+import Name from '../vo/Name';
+import Password from '../vo/Password';
+import UUID from '../vo/UUID';
 
-// Entity
 export class Account {
   private accountId: UUID;
   private name: Name;
@@ -24,15 +23,15 @@ export class Account {
     readonly isPassenger: boolean,
     readonly isDriver: boolean
   ) {
-    this.accountId = new UUID(accountId)
+    this.accountId = new UUID(accountId);
     this.name = new Name(name);
-		this.email = new Email(email)
-		this.cpf = new Cpf(cpf);
-		if (isDriver) this.carPlate = new CarPlate(carPlate);
-		this.password = new Password(password);
+    this.email = new Email(email);
+    this.cpf = new Cpf(cpf);
+    if (isDriver) this.carPlate = new CarPlate(carPlate);
+    this.password = new Password(password);
   }
 
-  static create (
+  static create(
     name: string,
     email: string,
     cpf: string,
@@ -42,7 +41,16 @@ export class Account {
     isDriver: boolean
   ) {
     const accountId = UUID.create().getValue();
-    return new Account(accountId, name, email, cpf, password, carPlate, isPassenger, isDriver);
+    return new Account(
+      accountId,
+      name,
+      email,
+      cpf,
+      password,
+      carPlate,
+      isPassenger,
+      isDriver
+    );
   }
 
   getName() {
@@ -50,7 +58,7 @@ export class Account {
   }
 
   setName(name: string) {
-    return this.name = new Name(name);
+    return (this.name = new Name(name));
   }
 
   getEmail() {

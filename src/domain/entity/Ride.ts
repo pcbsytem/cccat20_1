@@ -1,13 +1,14 @@
-import { Coord } from './vo/Coord';
-import { UUID } from './vo/UUID';
+import Coord from '../vo/Coord';
+import RideStatus, { RideStatusFactory } from '../vo/RideStatus';
+import UUID from '../vo/UUID';
 
-// Entity
 export default class Ride {
   private rideId: UUID;
   private passengerId: UUID;
   private driverId?: UUID;
   private from: Coord;
   private to: Coord;
+  private status: RideStatus;
 
   constructor(
     rideId: string,
@@ -19,7 +20,7 @@ export default class Ride {
     toLong: number,
     private fare: number,
     private distance: number,
-    public status: string,
+    status: string,
     readonly date: Date
   ) {
     this.rideId = new UUID(rideId);
@@ -27,9 +28,10 @@ export default class Ride {
     if (driverId) this.driverId = new UUID(driverId);
     this.from = new Coord(fromLat, fromLong);
     this.to = new Coord(toLat, toLong);
+    this.status = RideStatusFactory.create(status, this);
   }
 
-  static create (
+  static create(
     passengerId: string,
     fromLat: number,
     fromLong: number,
@@ -37,26 +39,26 @@ export default class Ride {
     toLong: number
   ) {
     const rideId = UUID.create().getValue();
-    const status = "requested";
+    const status = 'requested';
     const date = new Date();
     const fare = 0;
     const distance = 0;
     return new Ride(
-      rideId, 
+      rideId,
       passengerId,
       null,
-      fromLat, 
-      fromLong, 
-      toLat, 
-      toLong, 
-      fare, 
-      distance, 
-      status, 
+      fromLat,
+      fromLong,
+      toLat,
+      toLong,
+      fare,
+      distance,
+      status,
       date
     );
   }
 
-  static update (
+  static update(
     rideId: string,
     passengerId: string,
     driverId: string,
@@ -68,78 +70,80 @@ export default class Ride {
     distance: number,
     status: string,
     date: Date
-  ) {    
+  ) {
     return new Ride(
-      rideId, 
+      rideId,
       passengerId,
       driverId,
-      fromLat, 
-      fromLong, 
-      toLat, 
-      toLong, 
-      fare, 
-      distance, 
-      status, 
+      fromLat,
+      fromLong,
+      toLat,
+      toLong,
+      fare,
+      distance,
+      status,
       date
     );
   }
 
-  getFrom () {
+  getFrom() {
     return this.from;
   }
 
-  getTo () {
+  getTo() {
     return this.to;
   }
 
-  getRideId () {
+  getRideId() {
     return this.rideId.getValue();
   }
 
-  getPassengerId () {
+  getPassengerId() {
     return this.passengerId.getValue();
   }
 
-  getDriverId () {
+  getDriverId() {
     return this.driverId?.getValue();
   }
 
-  setDriverId (driverId: string) {
+  setDriverId(driverId: string) {
     this.driverId = new UUID(driverId);
   }
 
-  setStatus (status: string) {    
+  setStatus(status: RideStatus) {
     this.status = status;
   }
 
-  getStatus () {
-    return this.status;
+  getStatus() {
+    return this.status.value;
   }
 
-  accept (driverId: string) {
-    if (this.status !== "requested") throw new Error("Invalid status");
-    this.status = "accepted";
+  accept(driverId: string) {
+    this.status.accept();
     this.setDriverId(driverId);
   }
 
-  start () {
-    if (this.status !== "accepted") throw new Error("Invalid status");
-    this.status = "in_progress";
+  start() {
+    this.status.start();
   }
 
-  getFare () {
+  finish() {
+    this.status.finish();
+  }
+
+  getFare() {
     return this.fare;
   }
 
-  setFare (fare: number) {
+  setFare(fare: number) {
     this.fare = fare;
   }
 
-  getDistance () {
+  getDistance() {
     return this.distance;
   }
 
-  setDistance (distance: number) {
-    return this.distance = distance;
+  setDistance(distance: number) {
+    return (this.distance = distance);
   }
 }

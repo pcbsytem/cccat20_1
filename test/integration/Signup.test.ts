@@ -9,7 +9,7 @@ import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
 import GetAccount from '../../src/application/usecase/GetAccount';
 import Registry from '../../src/infra/di/Registry';
 import Signup from '../../src/application/usecase/Signup';
-import { Account } from '../../src/domain/Account';
+import { Account } from '../../src/domain/entity/Account';
 import ORM from '../../src/infra/ORM/ORM';
 
 let signup: Signup;

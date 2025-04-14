@@ -1,4 +1,4 @@
-import { UUID } from '../../src/domain/vo/UUID';
+import UUID from '../../src/domain/vo/UUID';
 import { PgPromiseAdapter } from '../../src/infra/database/DatabaseConnection';
 import Registry from '../../src/infra/di/Registry';
 import ORM from '../../src/infra/ORM/ORM';
