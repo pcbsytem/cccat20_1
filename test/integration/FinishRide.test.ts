@@ -81,7 +81,8 @@ test('Deve atualizar a posição de uma corrida', async () => {
   const inputUpdatePosition1 = {
     rideId: outputRequestRide.rideId,
     lat: -27.584905257808835,
-    long: -48.545022195325124
+    long: -48.545022195325124,
+    date: new Date('2023-03-01T22:50:00')
   };
 
   await updatePosition.execute(inputUpdatePosition1);
@@ -89,7 +90,8 @@ test('Deve atualizar a posição de uma corrida', async () => {
   const inputUpdatePosition2 = {
     rideId: outputRequestRide.rideId,
     lat: -27.496887588317275,
-    long: -48.522234807851476
+    long: -48.522234807851476,
+    date: new Date('2023-03-01T23:05:00')
   };
 
   await updatePosition.execute(inputUpdatePosition2);
@@ -97,7 +99,8 @@ test('Deve atualizar a posição de uma corrida', async () => {
   const inputUpdatePosition3 = {
     rideId: outputRequestRide.rideId,
     lat: -27.584905257808835,
-    long: -48.545022195325124
+    long: -48.545022195325124,
+    date: new Date('2023-03-01T23:20:00')
   };
   await updatePosition.execute(inputUpdatePosition3);
   const inputFinishRide = {
@@ -107,7 +110,7 @@ test('Deve atualizar a posição de uma corrida', async () => {
   const outputGetRide = await getRide.execute(outputRequestRide.rideId);
   expect(outputGetRide.status).toBe('completed');
   expect(outputGetRide.distance).toBe(20);
-  expect(outputGetRide.fare).toBe(42);
+  expect(outputGetRide.fare).toBe(78);
 });
 
 afterEach(async () => {
